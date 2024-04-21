@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phát hiện trái cây</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      function updateCamCount() {
+        $.ajax({
+          type: "GET",
+          url: "/cam_count",
+          success: function (data) {
+            $("#cam_count").text(data.so_luong_cam);
+          },
+        });
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Phát hiện trái cây</h1>
+
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="video" accept="video/mp4" />
+      <input type="submit" value="Tải lên" />
+    </form>
+    <form action="/cancel" method="post">
+      <input type="submit" value="Hủy bỏ" />
+    </form>
+    <div>
+      <img src="{{ url_for('video_feed') }}" style="width: 50%" />
+    </div>
+
+    <div>
+      <p>Số lượng cam: <span id="cam_count">{{ so_luong_cam }}</span></p>
+      <button onclick="updateCamCount()">Xem</button>
+    </div>
+  </body>
+</html>
