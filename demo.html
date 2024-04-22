@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .title {
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            object-fit: contain;
+
+        }
+
+        .container-video {
+            width: 50%;
+            height: 100vh;
+            padding: 20px;
+            background-color: black;
+
+        }
+
+        .container-video img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .container-video-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .btnUpload {
+
+            background-color: white;
+            padding: 5px 20px;
+            cursor: pointer;
+            border-radius: 30px;
+            border: none;
+        }
+
+        .btnSubmit {
+
+            background-color: blue;
+            padding: 5px 20px;
+            cursor: pointer;
+            border-radius: 30px;
+            border: none;
+        }
+
+        .btnReset {
+
+            background-color: red;
+            padding: 5px 20px;
+            cursor: pointer;
+            border-radius: 30px;
+            border: none;
+        }
+
+        .container-items {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .container-items-chart {
+            background-color: blanchedalmond;
+            padding: 20px;
+            height: 60%;
+
+        }
+
+        .container-items-count {
+            background: #000;
+            height: 40%;
+        }
+
+        .container-items-count h3 {
+            color: white;
+            text-align: center;
+        }
+
+        .container-items-count-labels {
+            color: white;
+            padding: 0 50px;
+
+        }
+
+        .labels-items {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            text-align: left;
+        }
+
+        .item {
+            background: #fc4a1a;
+            /* fallback for old browsers */
+            background: -webkit-linear-gradient(to right, #f7b733, #fc4a1a);
+            /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to right, #f7b733, #fc4a1a);
+            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+            width: 100px;
+            padding: 10px 20px;
+            border-radius: 15px;
+        }
+
+        .item span {
+            font-size: 24px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function () {
+            var myChart; // Define myChart globally
+
+            // Function to update cam count
+            function updateCamCount() {
+                $.ajax({
+                    type: "GET",
+                    url: "/cam_count",
+                    success: function (data) {
+                        // Update cam count
+                        $("#cam_count").text(data.so_luong_cam);
+                        $("#max").text(data.max);
+
+                        // Add data to chart
+                        myChart.data.labels.push("cam", "táo", "nho", "chuối");
+                        myChart.data.datasets[0].data.push('1', "2", '3', '4');
+                        myChart.data.datasets[0].backgroundColor = [
+                            "rgba(255, 99, 132, 0.5)", // cam
+                            "rgba(54, 162, 235, 0.5)", // táo
+                            "rgba(255, 206, 86, 0.5)", // nho
+                            "rgba(75, 192, 192, 0.5)", // chuối
+                        ];
+                        myChart.update();
+
+                        // Stop updating if detection is completed
+                        if (data.check) {
+                            clearInterval(intervalId);
+                        }
+                    },
+                });
+            }
+
+            // Function to update cam count per frame
+            function updateCamCountFrame() {
+                $.ajax({
+                    type: "GET",
+                    url: "/cam_count",
+                    success: function (data) {
+                        $("#cam_count_frame").text(data.so_luong_cam_frame);
+
+                        if (data.check) {
+                            clearInterval(intervalId);
+                        }
+                    },
+                });
+            }
+
+            // Initialize chart
+            var ctx = document.getElementById("myChart").getContext("2d");
+            myChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: "Số lượng cam",
+                            data: [],
+                            borderColor: "rgb(255, 99, 132)",
+                            borderWidth: 1,
+                        },
+                    ],
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+
+            // Start updating cam count per frame
+            var intervalId = setInterval(updateCamCountFrame, 300);
+
+            // Event listener for update button
+            $("#updateButton").click(function () {
+                updateCamCount();
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1 class="title">COMPUTER VISION FRUIT</h1>
+    <div class="container">
+        <div class="container-video">
+            <div class="container-video-buttons">
+                <input class="btnUpload" type="file" value="Upload file">
+                <input class="btnSubmit" type="submit" value="Run">
+                <input class="btnReset" type="submit" value="Reset">
+            </div>
+            <img src="./apple.jpg" />
+        </div>
+        <div class="container-items">
+            <div class="container-items-chart">
+                <button id="updateButton">Xem</button>
+                <canvas id="myChart" width="400" height="200"></canvas>
+            </div>
+            <div class="container-items-count">
+                <h3>SỐ LƯỢNG TRÁI CÂY TRONG MỘT KHUNG HÌNH</h3>
+                <div class="container-items-count-labels">
+                    <div class="labels-items">
+                        <div class="item">
+                            <span>Táo:</span>
+                            <span>20</span>
+                        </div>
+                        <div class="item">
+                            <span>Táo:</span>
+                            <span>20</span>
+                        </div>
+                        <div class="item">
+                            <span>Táo:</span>
+                            <span>20</span>
+                        </div>
+
+                    </div>
+                    <div class="labels-items">
+                        <h4>Chuối: 20</h4>
+                        <h4>Khớm: 20</h4>
+                        <h4>Dưa Hấu: 20</h4>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

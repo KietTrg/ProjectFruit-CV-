@@ -317,12 +317,14 @@ model = YOLO(src)
 # Biến global để lưu đường dẫn của video
 video_path = None
 cap = None
+check = False
 so_luong_cam = 0
 frame_count = 0
-
+so_luong_cam_frame = 0
+so_luong_cam_frame_array = []
 # Hàm xử lý phát hiện trái cây
 def detect_fruits():
-    global cap, so_luong_cam, frame_count
+    global cap, so_luong_cam, frame_count, so_luong_cam_frame, so_luong_cam_frame_array,check
     if video_path is None:
         return
 
@@ -341,16 +343,17 @@ def detect_fruits():
     while True:
         ret, frame = cap.read()
         if not ret:
+            check = True
             break
         
         results = model(frame)
 
-        
-        
+        so_luong_cam_frame = 0
+        frame_count += 1
         for result in results:
             for box in result.boxes.data:
                 xmin, ymin, xmax, ymax = map(int, box[:4])
-                frame_count += 1
+                
                 if box[5] == 0:
                     so_luong_tao += 1
                     label = f"Táo: {box[4] * 100:.2f}%"
@@ -365,6 +368,7 @@ def detect_fruits():
                     color = (156, 70, 134)
                 elif box[5] == 3:
                     so_luong_cam += 1
+                    so_luong_cam_frame += 1
                     label = f"Cam: {box[4] * 100:.2f}%"
                     color = (0, 152, 255)
                     
@@ -379,18 +383,19 @@ def detect_fruits():
 
                 cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
                 cv2.putText(frame, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        so_luong_cam_frame_array.append(so_luong_cam_frame)
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-    return so_luong_cam, frame_count
+    return so_luong_cam, frame_count, check
 # Route cho trang chính
 @app.route('/')
 def index():
     global so_luong_cam
     
-    return render_template('index.html',so_luong_cam=so_luong_cam)
+    return render_template('index.html',so_luong_cam=so_luong_cam, so_luong_cam_frame=so_luong_cam_frame)
 
 # Route cho video feed
 @app.route('/video_feed')
@@ -400,15 +405,27 @@ def video_feed():
 # Route cho API trả về số lượng cam
 @app.route('/cam_count')
 def cam_count():
-    global so_luong_cam, frame_count
+    global so_luong_cam, frame_count, so_luong_cam_frame, so_luong_cam_frame_array, check
+    
+    
     print(so_luong_cam)
-    print(frame_count)
-    return jsonify({'so_luong_cam': round(so_luong_cam/frame_count)})
+    print(so_luong_cam_frame)
+    print(check)
+    print(so_luong_cam_frame_array)
+    print("so frame",frame_count)
+    return jsonify(
+        {   
+            'check': check,
+            'max': max(so_luong_cam_frame_array),
+            'so_luong_cam': round(so_luong_cam/frame_count),
+            'so_luong_cam_frame': so_luong_cam_frame
+        }
+    )
 
 # Route cho upload video
 @app.route('/upload', methods=['POST'])
 def upload_video():
-    global video_path, so_luong_cam, cap
+    global video_path, so_luong_cam, cap,so_luong_cam_frame, frame_count, so_luong_cam_frame_array, check
     if 'video' not in request.files:
         return redirect(request.url)
     file = request.files['video']
@@ -419,12 +436,16 @@ def upload_video():
         video_path = 'uploaded_video.mp4'
         file.save(video_path)
         so_luong_cam = 0
+        frame_count = 0
+        so_luong_cam_frame = 0
+        so_luong_cam_frame_array = []
         cap = None
+        check = False
         return redirect(url_for('index'))
 
 @app.route('/cancel', methods=['POST'])
 def cancel_upload():
-    global video_path, cap, so_luong_cam 
+    global video_path, cap, so_luong_cam, so_luong_cam_frame, frame_count, so_luong_cam_frame_array,check
     if cap is not None:
         if cap.isOpened():
             cap.release()
@@ -433,6 +454,10 @@ def cancel_upload():
         os.remove(video_path)
         video_path = None
         so_luong_cam = 0
+        frame_count = 0
+        check = False
+        so_luong_cam_frame = 0
+        so_luong_cam_frame_array = []
     return redirect(url_for('index'))
        
 if __name__ == '__main__':
