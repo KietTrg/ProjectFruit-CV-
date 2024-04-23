@@ -129,6 +129,7 @@
         cursor: pointer;
         border-radius: 30px;
         border: none;
+        display: none;
       }
 
       .btnSubmit {
@@ -201,14 +202,17 @@
       <div class="container-video">
         <div class="container-video-buttons">
           <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="video">up</label>
             <input
               class="btnUpload"
               type="file"
               name="video"
+              id="video"
               accept="video/mp4"
             />
             <input class="btnSubmit" type="submit" value="Run" />
           </form>
+
           <form action="/cancel" method="post">
             <input class="btnReset" type="submit" value="Reset" />
           </form>
