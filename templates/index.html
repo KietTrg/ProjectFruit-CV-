@@ -1,250 +1,391 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Phát hiện trái cây</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      $(document).ready(function () {
-        var myChart; // Define myChart globally
 
-        // Function to update cam count
-        function updateCamCount() {
-          $.ajax({
-            type: "GET",
-            url: "/cam_count",
-            success: function (data) {
-              // Update cam count
-              $("#cam_count").text(data.so_luong_cam);
-              $("#max").text(data.max);
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phát hiện trái cây</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    $(document).ready(function () {
+      var myChart; // Define myChart globally
 
-              // Add data to chart
-              myChart.data.labels.push("cam", "táo", "nho", "chuối");
-              myChart.data.datasets[0].data.push(data.so_luong_cam);
-              myChart.data.datasets[0].backgroundColor = [
-                "rgba(255, 99, 132, 0.5)", // cam
-                "rgba(54, 162, 235, 0.5)", // táo
-                "rgba(255, 206, 86, 0.5)", // nho
-                "rgba(75, 192, 192, 0.5)", // chuối
-              ];
-              myChart.update();
+      // Function to update cam count
+      function updateCamCount() {
+        $.ajax({
+          type: "GET",
+          url: "/cam_count",
+          success: function (data) {
+            // Update cam count
+            $("#cam_count").text(data.so_luong_cam);
+            $("#max").text(data.max);
 
-              // Stop updating if detection is completed
-              if (data.check) {
-                clearInterval(intervalId);
-              }
-            },
-          });
-        }
+            // Add data to chart
+            myChart.data.labels.push("cam", "táo", "nho", "chuối");
+            myChart.data.datasets[0].data.push(data.so_luong_cam);
+            myChart.data.datasets[0].backgroundColor = [
+              "rgba(255, 99, 132, 0.5)", // cam
+              "rgba(54, 162, 235, 0.5)", // táo
+              "rgba(255, 206, 86, 0.5)", // nho
+              "rgba(75, 192, 192, 0.5)", // chuối
+            ];
+            myChart.update();
 
-        // Function to update cam count per frame
-        function updateCamCountFrame() {
-          $.ajax({
-            type: "GET",
-            url: "/cam_count",
-            success: function (data) {
-              $("#cam_count_frame").text(data.so_luong_cam_frame);
-
-              if (data.check) {
-                clearInterval(intervalId);
-              }
-            },
-          });
-        }
-
-        // Initialize chart
-        var ctx = document.getElementById("myChart").getContext("2d");
-        myChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: [],
-            datasets: [
-              {
-                label: "Số lượng cam",
-                data: [],
-                borderColor: "rgb(255, 99, 132)",
-                borderWidth: 1,
-              },
-            ],
-          },
-          options: {
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
+            // Stop updating if detection is completed
+            if (data.check) {
+              clearInterval(intervalId);
+            }
           },
         });
+      }
 
-        // Start updating cam count per frame
-        var intervalId = setInterval(updateCamCountFrame, 300);
+      // Function to update cam count per frame
+      function updateCamCountFrame() {
+        $.ajax({
+          type: "GET",
+          url: "/cam_count",
+          success: function (data) {
+            $("#cam_count_frame").text(data.so_luong_cam_frame);
 
-        // Event listener for update button
-        $("#updateButton").click(function () {
-          updateCamCount();
+            if (data.check) {
+              clearInterval(intervalId);
+            }
+          },
         });
+      }
+
+      // Initialize chart
+      var ctx = document.getElementById("myChart").getContext("2d");
+      myChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Số lượng cam",
+              data: [],
+              borderColor: "rgb(255, 99, 132)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
       });
-    </script>
-    <style>
-      body {
-        background: black;
-      }
-      .title {
-        text-align: center;
-      }
 
-      .container {
-        display: flex;
-        gap: 20px;
-      }
+      // Start updating cam count per frame
+      var intervalId = setInterval(updateCamCountFrame, 300);
 
-      .container-video {
-        width: 50%;
-        padding: 20px;
-        background-color: #333;
-        border-radius: 30px;
-      }
+      // Event listener for update button
+      $("#updateButton").click(function () {
+        updateCamCount();
+      });
+    });
+  </script>
+  <style>
+    body {
+      background: #12121e;
+      font-family: 'Exo 2', sans-serif;
+    }
 
-      .container-video img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        border-radius: 30px;
+    .title {
+      text-align: center;
+      font-weight: 800;
+      font-size: 40px;
+      letter-spacing: 10px;
+      color: #fff;
+      text-align: center;
+      background: linear-gradient(to right, #de6161, #2657eb);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-        object-fit: contain;
-      }
+    .container {
+      display: flex;
+      gap: 20px;
+    }
 
-      .container-video-buttons {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 10px;
-      }
+    .container-video {
+      width: 55%;
+      padding: 20px;
+      background-color: #1d1d29;
+      border-radius: 30px;
 
-      .btnUpload {
-        background-color: white;
-        padding: 5px 20px;
-        cursor: pointer;
-        border-radius: 30px;
-        border: none;
-        display: none;
-      }
+    }
 
-      .btnSubmit {
-        background-color: blue;
-        padding: 5px 20px;
-        cursor: pointer;
-        border-radius: 30px;
-        border: none;
-      }
+    .container-video img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 30px;
 
-      .btnReset {
-        background-color: red;
-        padding: 5px 20px;
-        cursor: pointer;
-        border-radius: 30px;
-        border: none;
-      }
+      object-fit: contain;
+    }
 
-      .container-items {
-        width: 50%;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
+    .container-video-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
 
-      .container-items-chart {
-        background-color: #333;
-        padding: 20px;
-        height: 60%;
-        border-radius: 30px;
-      }
+    .btnUpload {
+      display: none;
+    }
 
-      .container-items-count {
-        background: #333;
-        height: 40%;
-        border-radius: 30px;
-      }
+    .label-upload {
+      padding: 5px 20px;
+      width: 100%;
+      cursor: pointer;
+      border-radius: 30px;
+      border: 1px #56ab2f solid;
+      color: #fff;
+      text-align: center;
+      background: linear-gradient(to left, transparent 50%, #56ab2f 50%, #a8e063);
+      background-size: 200% 100%;
+      background-position: right;
+      transition: background-position 1s ease;
+    }
 
-      .container-items-count h3 {
-        color: white;
-        text-align: center;
-      }
+    .label-upload:hover {
+      background-position: left;
+    }
 
-      .container-items-count-labels {
-        color: white;
-        padding: 0 50px;
-      }
+    /*btn submit*/
+    .btnSubmit {
+      display: none;
+    }
 
-      .labels-items {
-        display: flex;
-        width: 100%;
-        justify-content: space-between;
-        align-items: center;
-        text-align: left;
-      }
-      .container-video-video {
-        height: 450px;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        border: 1px gray dashed;
-        border-radius: 30px;
-      }
-    </style>
-  </head>
+    .label-submit {
+      padding: 5px 20px;
+      width: 100%;
+      cursor: pointer;
+      border-radius: 30px;
+      border: 1px #2d4699 solid;
+      color: #fff;
+      text-align: center;
+      background: linear-gradient(to left, transparent 50%, #8E2DE2 50%, #4A00E0);
+      background-size: 200% 100%;
+      background-position: right;
+      transition: background-position 1s ease;
+    }
 
-  <body>
-    <h1 class="title">COMPUTER VISION FRUIT</h1>
-    <div class="container">
-      <div class="container-video">
-        <div class="container-video-buttons">
-          <form action="/upload" method="post" enctype="multipart/form-data">
-            <label for="video">up</label>
-            <input
-              class="btnUpload"
-              type="file"
-              name="video"
-              id="video"
-              accept="video/mp4"
-            />
-            <input class="btnSubmit" type="submit" value="Run" />
-          </form>
+    .label-submit:hover {
+      background-position: left;
+    }
 
-          <form action="/cancel" method="post">
-            <input class="btnReset" type="submit" value="Reset" />
-          </form>
-        </div>
-        <div class="container-video-video">
-          <img src="{{ url_for('video_feed') }}" />
-        </div>
+    .btnReset {
+      display: none;
+    }
+
+    .label-reset {
+      background-color: #a1444b;
+      padding: 5px 20px;
+      cursor: pointer;
+      border-radius: 30px;
+      border: none;
+      color: #fff;
+    }
+
+    .container-items {
+      width: 45%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .container-items-chart {
+      background-color: #1d1d29;
+      padding: 20px;
+      height: 60%;
+      border-radius: 30px;
+    }
+
+    .container-items-count {
+      background: #1d1d29;
+      height: 40%;
+      border-radius: 30px;
+    }
+
+    .container-items-count h3 {
+      color: white;
+      text-align: center;
+      font-weight: 500;
+      letter-spacing: 3px;
+      margin-bottom: 25px;
+    }
+
+    .container-items-count-labels {
+      display: flex;
+
+      gap: 30px;
+      color: white;
+      padding: 0 50px;
+    }
+
+    .labels-items {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+    }
+
+    .item1 {
+      border-bottom: 2px solid transparent;
+      padding: 5px 20px;
+      border-image: linear-gradient(to right, #CB356B, #BD3F32) 1;
+
+    }
+
+    .item2 {
+      border-bottom: 2px solid transparent;
+      padding: 5px 20px;
+      border-image: linear-gradient(to right, #F3F9A7, #CAC531) 1;
+
+    }
+
+    .item3 {
+      border-bottom: 2px solid transparent;
+      padding: 5px 20px;
+      border-image: linear-gradient(to right, #834d9b, #d04ed6) 1;
+
+
+    }
+
+    .item4 {
+      border-bottom: 2px solid transparent;
+      padding: 5px 20px;
+      border-image: linear-gradient(to right, #FDC830, #F37335) 1;
+
+
+    }
+
+    .item5 {
+      border-bottom: 2px solid transparent;
+      padding: 5px 20px;
+      border-image: linear-gradient(to right, #e65c00, #F9D423) 1;
+
+    }
+
+    .item6 {
+
+      border-bottom: 2px solid transparent;
+      padding: 5px 20px;
+      border-image: linear-gradient(to right, #ff4b1f, #ff9068) 1;
+
+    }
+
+    .container-video-video {
+      height: 450px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      border: 2px gray dashed;
+      border-radius: 30px;
+    }
+
+    .form-btn-upload {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .form-btn-reset {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+
+    }
+
+    #updateButton {
+      background: linear-gradient(to left, #b92b27, #1565C0);
+      width: 20%;
+      height: 30px;
+      text-align: center;
+      border: none;
+      color: white;
+      border-radius: 25px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 class="title">COMPUTER VISION FRUIT</h1>
+  <div class="container">
+    <div class="container-video">
+      <div class="container-video-buttons">
+        <form class="form-btn-reset" action="/cancel" method="post">
+          <label class="label-reset" for="reset">Reset</label>
+          <input class="btnReset" type="submit" value="Reset" name="reset" id="reset" />
+        </form>
+        <form action="/upload" class="form-btn-upload" method="post" enctype="multipart/form-data">
+          <label class="label-upload" for="video">Up load file</label>
+          <input class="btnUpload" type="file" name="video" id="video" accept="video/mp4" />
+          <label class="label-submit" for="run">Run</label>
+          <input class="btnSubmit" type="submit" value="Run" id="run" />
+        </form>
       </div>
-      <div class="container-items">
-        <div class="container-items-count">
-          <h3>SỐ LƯỢNG TRÁI CÂY TRONG MỘT KHUNG HÌNH</h3>
-          <div class="container-items-count-labels">
-            <div class="labels-items">
-              <h4>Táo: 20</h4>
-              <h4>
-                Cam:
-                <span id="cam_count_frame">{{ so_luong_cam_frame }}</span>
-              </h4>
-              <h4>Nho: 20</h4>
+      <div class="container-video-video">
+        <img src="{{ url_for('video_feed') }}" />
+      </div>
+    </div>
+    <div class="container-items">
+      <div class="container-items-count">
+        <h3>SỐ LƯỢNG TRÁI CÂY TRONG MỘT KHUNG HÌNH</h3>
+        <div class="container-items-count-labels">
+          <div class="labels-items">
+            <div class="item1">
+              <span>Táo:</span>
+              <span>20</span>
             </div>
-            <div class="labels-items">
-              <h4>Chuối: 20</h4>
-              <h4>Khớm: 20</h4>
-              <h4>Dưa Hấu: 20</h4>
+            <div class="item4">
+              <span>Cam:</span>
+              <span id="cam_count_frame">{{ so_luong_cam_frame }}</span>
+            </div>
+          </div>
+          <div class="labels-items">
+
+            <div class="item2">
+              <span>Chuối:</span>
+              <span>20</span>
+            </div>
+            <div class="item5">
+              <span>Khóm:</span>
+              <span>20</span>
+            </div>
+          </div>
+          <div class="labels-items">
+            <div class="item3">
+              <span>Nho:</span>
+              <span>20</span>
+            </div>
+            <div class="item6">
+              <span>Dưa hấu:</span>
+              <span>20</span>
             </div>
           </div>
         </div>
-        <div class="container-items-chart">
-          <button id="updateButton">Xem</button>
-          <canvas id="myChart" width="400" height="200"></canvas>
-        </div>
+      </div>
+      <div class="container-items-chart">
+        <button id="updateButton">Xem</button>
+        <canvas id="myChart" width="400" height="200"></canvas>
       </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>
