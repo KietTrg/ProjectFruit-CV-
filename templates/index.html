@@ -15,14 +15,15 @@
       function updateCamCount() {
         $.ajax({
           type: "GET",
-          url: "/cam_count",
+          url: "/count",
           success: function (data) {
             // Update cam count
-            $("#cam_count").text(data.so_luong_cam);
+            $("#count").text(data.so_luong_cam); //cam
+        
             $("#max").text(data.max);
 
             // Add data to chart
-            myChart.data.labels.push("cam", "táo", "nho", "chuối");
+            myChart.data.labels.push("cam", "táo", "nho", "chuối", "khóm", "dưa hấu");
             myChart.data.datasets[0].data.push(data.so_luong_cam);
             myChart.data.datasets[0].backgroundColor = [
               "rgba(255, 99, 132, 0.5)", // cam
@@ -44,10 +45,15 @@
       function updateCamCountFrame() {
         $.ajax({
           type: "GET",
-          url: "/cam_count",
+          url: "/count",
           success: function (data) {
-            $("#cam_count_frame").text(data.so_luong_cam_frame);
-
+            $("#cam_count_frame").text(data.so_luong_cam_frame); //cam
+            $("#tao_count_frame").text(data.so_luong_tao_frame); //táo
+            $("#chuoi_count_frame").text(data.so_luong_chuoi_frame); //chuối
+            $("#nho_count_frame").text(data.so_luong_nho_frame); //nho
+            $("#khom_count_frame").text(data.so_luong_khom_frame); //khớm
+            $("#duahau_count_frame").text(data.so_luong_duahau_frame);
+      
             if (data.check) {
               clearInterval(intervalId);
             }
@@ -350,7 +356,7 @@
           <div class="labels-items">
             <div class="item1">
               <span>Táo:</span>
-              <span>20</span>
+              <span id="tao_count_frame">{{ so_luong_tao_frame }}</span>
             </div>
             <div class="item4">
               <span>Cam:</span>
@@ -361,21 +367,21 @@
 
             <div class="item2">
               <span>Chuối:</span>
-              <span>20</span>
+              <span id="chuoi_count_frame">{{ so_luong_chuoi_frame }}</span>
             </div>
             <div class="item5">
               <span>Khóm:</span>
-              <span>20</span>
+              <span id="khom_count_frame">{{ so_luong_khom_frame }}</span>
             </div>
           </div>
           <div class="labels-items">
             <div class="item3">
               <span>Nho:</span>
-              <span>20</span>
+              <span id="nho_count_frame">{{ so_luong_nho_frame }}</span>
             </div>
             <div class="item6">
               <span>Dưa hấu:</span>
-              <span>20</span>
+              <span id="duahau_count_frame" > {{so_luong_duahau_frame }}</span>
             </div>
           </div>
         </div>
