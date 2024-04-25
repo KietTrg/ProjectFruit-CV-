@@ -305,6 +305,7 @@
 from flask import Flask, render_template, Response, request, redirect, jsonify, url_for
 import cv2
 import os
+from numpy import mean
 from ultralytics import YOLO
 
 app = Flask(__name__)
@@ -318,39 +319,34 @@ model = YOLO(src)
 video_path = None
 cap = None
 check = False
+frame_count = 0
 #cam
 so_luong_cam = 0
-frame_count = 0
 so_luong_cam_frame = 0
 so_luong_cam_frame_array = []
 
 #táo
 so_luong_tao = 0
-frame_count = 0
 so_luong_tao_frame = 0
 so_luong_tao_frame_array = []
 
 #Chuối
 so_luong_chuoi = 0
-frame_count = 0
 so_luong_chuoi_frame = 0
 so_luong_chuoi_frame_array = []
 
 #nho
 so_luong_nho = 0
-frame_count = 0
 so_luong_nho_frame = 0
 so_luong_nho_frame_array = []
 
 #khớm
 so_luong_khom = 0
-frame_count = 0
 so_luong_khom_frame = 0
 so_luong_khom_frame_array = []
 
 #duahau
 so_luong_duahau = 0
-frame_count = 0
 so_luong_duahau_frame = 0
 so_luong_duahau_frame_array = []
 
@@ -399,50 +395,56 @@ def detect_fruits():
                 if box[5] == 0:
                     so_luong_tao += 1
                     so_luong_tao_frame += 1
+                    so_luong_tao_frame_array.append(so_luong_tao_frame) #táo
+                    
                     label = f"Táo: {box[4] * 100:.2f}%"
                     color = (72, 72, 208)
                 elif box[5] == 1:
                     so_luong_chuoi += 1
                     so_luong_chuoi_frame += 1
+                    so_luong_chuoi_frame_array.append(so_luong_chuoi_frame) #chuối
+                    
                     label = f"Chuối: {box[4] * 100:.2f}%"
                     color = (74, 201, 255)
                 elif box[5] == 2:
                     so_luong_nho += 1
                     so_luong_nho_frame += 1
+                    so_luong_nho_frame_array.append(so_luong_nho_frame) #nho
+                    
                     label = f"Nho: {box[4] * 100:.2f}%"
                     color = (156, 70, 134)
                 elif box[5] == 3:
                     so_luong_cam += 1
                     so_luong_cam_frame += 1
+                    so_luong_cam_frame_array.append(so_luong_cam_frame) #cam
+                    
                     label = f"Cam: {box[4] * 100:.2f}%"
                     color = (0, 152, 255)
                     
                 elif box[5] == 4:
                     so_luong_khom += 1
                     so_luong_khom_frame += 1
+                    so_luong_khom_frame_array.append(so_luong_khom_frame) #khớm
+                    
                     label = f"Khóm: {box[4] * 100:.2f}%"
                     color = (67, 152, 255)
                 elif box[5] == 5:
                     so_luong_duahau += 1
                     so_luong_duahau_frame += 1
+                    so_luong_duahau_frame_array.append(so_luong_duahau_frame) #duahau
+                    
                     label = f"Dưa Hấu: {box[4] * 100:.2f}%"
                     color = (85, 38, 175)
 
                 cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
                 cv2.putText(frame, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-        so_luong_cam_frame_array.append(so_luong_cam_frame) #cam
-        so_luong_tao_frame_array.append(so_luong_tao_frame) #táo
-        so_luong_chuoi_frame_array.append(so_luong_chuoi_frame) #chuối
-        so_luong_nho_frame_array.append(so_luong_nho) #nho
-        so_luong_khom_frame_array.append(so_luong_khom) #khớm
-        so_luong_duahau_frame_array.append(so_luong_duahau) #duahau
     
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-    return so_luong_cam, frame_count, check, so_luong_tao, so_luong_chuoi, so_luong_nho, so_luong_khom, so_luong_duahau
+    return so_luong_cam, frame_count, check, so_luong_tao, so_luong_chuoi, so_luong_nho, so_luong_khom, so_luong_duahau, so_luong_tao_frame_array, so_luong_chuoi_frame_array, so_luong_nho_frame_array, so_luong_cam_frame_array, so_luong_khom_frame_array, so_luong_duahau_frame_array
 # Route cho trang chính
 @app.route('/')
 def index():
@@ -450,7 +452,7 @@ def index():
     
     return render_template('index.html',so_luong_cam=so_luong_cam, so_luong_cam_frame=so_luong_cam_frame, so_luong_tao=so_luong_tao, so_luong_tao_frame=so_luong_tao_frame, 
                         so_luong_chuoi=so_luong_chuoi, so_luong_chuoi_frame=so_luong_chuoi_frame, so_luong_nho=so_luong_nho, so_luong_nho_frame=so_luong_nho_frame,
-                        so_luong_khom=so_luong_khom, so_luong_khom_frame=so_luong_khom_frame, so_luong_duahau=so_luong_duahau, so_luong_duahau_frame=so_luong_duahau_frame)
+                        so_luong_khom=so_luong_khom, so_luong_khom_frame=so_luong_khom_frame, so_luong_duahau=so_luong_duahau, so_luong_duahau_frame=so_luong_duahau_frame, frame_count=frame_count)
 
 # Route cho video feed
 @app.route('/video_feed')
@@ -466,42 +468,56 @@ def count():
         so_luong_khom, so_luong_khom_frame, so_luong_khom_frame_array, \
         so_luong_duahau, so_luong_duahau_frame, so_luong_duahau_frame_array
     
+    if(so_luong_tao_frame_array == []):
+        so_luong_tao_frame_array.append(0)
+        
+    if(so_luong_chuoi_frame_array == []):
+        so_luong_chuoi_frame_array.append(0)
+        
+    if(so_luong_nho_frame_array == []):
+        so_luong_nho_frame_array.append(0)
+        
+    if(so_luong_cam_frame_array == []):
+        so_luong_cam_frame_array.append(0)
+        
+    if(so_luong_khom_frame_array == []):
+        so_luong_khom_frame_array.append(0)
+        
+    if(so_luong_duahau_frame_array == []):
+        so_luong_duahau_frame_array.append(0)
     
-    print(so_luong_cam)
-    print(so_luong_cam_frame)
-    print(check)
-    print(so_luong_cam_frame_array)
-    print("so frame",frame_count)
     return jsonify(
         {   
             'check': check,
-            'max': max(so_luong_cam_frame_array),
-            'so_luong_cam': round(so_luong_cam/frame_count),
+            'frame_count':frame_count,
+            #cam
+            'max_cam': max(so_luong_cam_frame_array),
+            'so_luong_cam': round(mean(so_luong_cam_frame_array),2),
             'so_luong_cam_frame': so_luong_cam_frame,
             
             #táo
-            'max': max(so_luong_tao_frame_array),
-            'so_luong_tao': round(so_luong_tao/frame_count),
+            'max_tao': max(so_luong_tao_frame_array),
+            'so_luong_tao': round(mean(so_luong_tao_frame_array),2),
             'so_luong_tao_frame': so_luong_tao_frame,
 
             #chuối
-            'max': max(so_luong_chuoi_frame_array),
-            'so_luong_chuoi': round(so_luong_chuoi/frame_count),
+            'max_chuoi': max(so_luong_chuoi_frame_array),
+            'so_luong_chuoi': round(mean(so_luong_chuoi_frame_array),2),
             'so_luong_chuoi_frame': so_luong_chuoi_frame,
 
             #nho
-            'max': max(so_luong_nho_frame_array),
-            'so_luong_nho': round(so_luong_nho/frame_count),
+            'max_nho': max(so_luong_nho_frame_array),
+            'so_luong_nho': round(mean(so_luong_nho_frame_array),2),
             'so_luong_nho_frame': so_luong_nho_frame,
 
             #khớm
-            'max': max(so_luong_khom_frame_array),
-            'so_luong_khom': round(so_luong_khom/frame_count),
+            'max_khom': max(so_luong_khom_frame_array),
+            'so_luong_khom': round(mean(so_luong_khom_frame_array),2),
             'so_luong_khom_frame': so_luong_khom_frame,
             
             #duahau
-            'max': max(so_luong_duahau_frame_array),
-            'so_luong_duahau': round(so_luong_duahau/frame_count),
+            'max_duahau': max(so_luong_duahau_frame_array),
+            'so_luong_duahau': round(mean(so_luong_duahau_frame_array),2),
             'so_luong_duahau_frame' :so_luong_duahau_frame
           
         }
@@ -525,39 +541,39 @@ def upload_video():
         # Lưu video vào thư mục hiện tại hoặc thư mục bạn chọn
         video_path = 'uploaded_video.mp4'
         file.save(video_path)
+        frame_count = 0
         #cam
         so_luong_cam = 0
-        frame_count = 0
         so_luong_cam_frame = 0
         so_luong_cam_frame_array = []
 
         #táo
         so_luong_tao = 0
-        frame_count = 0
+      
         so_luong_tao_frame = 0
         so_luong_tao_frame_array = []
 
         #chuối
         so_luong_chuoi = 0
-        frame_count = 0
+       
         so_luong_chuoi_frame = 0
         so_luong_chuoi_frame_array = []
 
         #nho
         so_luong_nho = 0
-        frame_count = 0
+       
         so_luong_nho_frame = 0
         so_luong_nho_frame_array = []
 
         #khớm  
         so_luong_khom = 0
-        frame_count = 0
+       
         so_luong_khom_frame = 0
         so_luong_khom_frame_array = []
         
         #duahau
         so_luong_duahau = 0
-        frame_count = 0
+     
         so_luong_duahau_frame = 0
         so_luong_duahau_frame_array = []
       
@@ -579,45 +595,35 @@ def cancel_upload():
     if video_path:
         os.remove(video_path)
         video_path = None
+        check = False
+        frame_count = 0
         #cam
         so_luong_cam = 0
-        frame_count = 0
-        check = False
         so_luong_cam_frame = 0
         so_luong_cam_frame_array = []
 
         #táo
         so_luong_tao = 0
-        frame_count = 0
-        check = False
         so_luong_tao_frame = 0
         so_luong_tao_frame_array = []
 
         #chuối
         so_luong_chuoi = 0
-        frame_count = 0
-        check = False
         so_luong_chuoi_frame = 0
         so_luong_chuoi_frame_array = []
 
         #nho
         so_luong_nho = 0
-        frame_count = 0
-        check = False
         so_luong_nho_frame = 0
         so_luong_nho_frame_array = []
 
         #khớm
         so_luong_khom = 0
-        frame_count = 0
-        check = False
         so_luong_khom_frame = 0
         so_luong_khom_frame_array = []
 
         #duahau
         so_luong_duahau = 0
-        frame_count = 0
-        check = False
         so_luong_duahau_frame = 0
         so_luong_duahau_frame_array = []
       
